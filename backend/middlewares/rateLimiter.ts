@@ -93,7 +93,7 @@ class RateLimiter {
 // Predefined rate limiters
 export const authLimiter = new RateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5 // 5 login attempts per 15 minutes
+  maxRequests: 50 // 50 login attempts per 15 minutes
 });
 
 export const apiLimiter = new RateLimiter({
