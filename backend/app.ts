@@ -36,7 +36,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check
+// Health check routes
+app.get('/', (_req: Request, res: Response) => {
+  res.json({ message: 'Timesheet API Server is running', status: 'ok' });
+});
+
 app.get('/api', (_req: Request, res: Response) => {
   res.json({ message: 'Timesheet API Server is running' });
 });
