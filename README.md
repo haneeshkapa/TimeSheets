@@ -2,6 +2,13 @@
 
 A comprehensive web-based timesheet logging application built with React, Node.js, Express, and SQLite. This application allows users to log their work hours against assigned projects and provides administrators with powerful management and reporting capabilities.
 
+## 🚀 Live Demo
+
+- **Frontend**: [https://time-sheets-indol.vercel.app](https://time-sheets-indol.vercel.app)
+- **Backend API**: [https://timesheets-anay.onrender.com](https://timesheets-anay.onrender.com)
+
+> **Note**: Backend may take 30-60 seconds to wake up on first request (free tier limitation)
+
 ## Features
 
 ### User Features
@@ -27,8 +34,8 @@ A comprehensive web-based timesheet logging application built with React, Node.j
 
 ## Tech Stack
 
-- **Frontend**: React 18 + TypeScript + Tailwind CSS
-- **Backend**: Node.js + Express.js
+- **Frontend**: React 19 + TypeScript + Tailwind CSS (Deployed on Vercel)
+- **Backend**: Node.js + Express.js + TypeScript (Deployed on Render)
 - **Database**: SQLite3
 - **Authentication**: JWT + bcrypt
 - **Data Export**: CSV Writer
