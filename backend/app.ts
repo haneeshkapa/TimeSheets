@@ -6,7 +6,6 @@ import cors from 'cors';
 import { connectDB } from './config';
 import { errorHandler, requestLogger } from './middlewares';
 import { errorHandler as newErrorHandler, notFoundHandler } from './middlewares/errorMiddleware';
-import { authLimiter, apiLimiter } from './middlewares/rateLimiter';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import adminRoutes from './routes/admin';
@@ -27,9 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOption));
 app.use(requestLogger);
 
-// Rate limiting
-app.use('/api/auth', authLimiter.middleware);
-app.use('/api', apiLimiter.middleware);
 
 // Routes
 app.use('/api/auth', authRoutes);
