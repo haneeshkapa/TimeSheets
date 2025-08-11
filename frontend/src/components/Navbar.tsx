@@ -18,7 +18,7 @@ const Navbar: React.FC = () => {
             <div className="flex-shrink-0 flex items-center">
               <h1 className="text-xl font-bold">Timesheet App</h1>
             </div>
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="ml-10 flex items-center space-x-4">
               {user.role === 'admin' ? (
                 <>
                   <Link
