@@ -12,11 +12,13 @@ A comprehensive web-based timesheet logging application built with React, Node.j
 ## Features
 
 ### User Features
+- **Real-time Time Tracking**: Clock in/out functionality for accurate time tracking
 - **Timesheet Entry**: Users can log hours for their assigned projects across a weekly timesheet
 - **Project View**: See only projects they are assigned to
 - **Weekly Time Tracking**: Easy-to-use interface for entering hours for each day of the week
 - **Auto-calculation**: Total hours are automatically calculated
 - **Individual Project Submission**: Save timesheet entries for each project separately
+- **Live Timer**: See active session duration in real-time
 
 ### Admin Features
 - **Dashboard Overview**: View all submitted timesheets with filtering capabilities
@@ -26,6 +28,8 @@ A comprehensive web-based timesheet logging application built with React, Node.j
 - **Reporting**: Generate detailed reports by user or project
 - **Data Export**: Export timesheet data as CSV or JSON files
 - **Filtering**: Filter timesheets by user, project, or date range
+- **Data Synchronization**: Sync clock-in/out entries to timesheet records with one click
+- **Auto-sync**: Automatic synchronization when admin dashboard loads
 
 ### Authentication & Roles
 - **Secure Login**: JWT-based authentication
@@ -86,7 +90,13 @@ A comprehensive web-based timesheet logging application built with React, Node.j
 ### For Users
 
 1. **Login** with your user credentials
-2. **Timesheet Entry**: 
+2. **Time Clock** (Real-time Tracking):
+   - Navigate to the Time Clock page
+   - See all your assigned projects with live timer display
+   - Click "Clock In" to start tracking time for a project
+   - See elapsed time update in real-time
+   - Click "Clock Out" when finished - time is automatically saved to your timesheet
+3. **Timesheet Entry** (Manual Entry):
    - View your assigned projects
    - Enter hours for each day of the week (Sunday through Saturday)
    - Click "Save" for each project to submit your timesheet
@@ -108,9 +118,10 @@ A comprehensive web-based timesheet logging application built with React, Node.j
    - Generate user-based reports showing total hours and project counts
    - Generate project-based reports showing total hours and team size
    - View performance metrics and percentages
-7. **Export Data**: 
-   - Export all timesheet data as CSV files
-   - Export data as JSON for further processing
+7. **Data Management**:
+   - **Sync Time Entries**: Click "Sync Time Entries" to synchronize clock-in/out data with timesheets
+   - **Auto-sync**: Data automatically syncs when dashboard loads
+   - **Export Data**: Export all timesheet data as CSV or JSON files
 
 ## Database Schema
 
@@ -120,6 +131,8 @@ The application uses SQLite with the following tables:
 - **projects**: Project information including client and work details
 - **user_projects**: Many-to-many relationship between users and projects
 - **timesheets**: Time entries with daily hour breakdowns
+- **time_entries**: Real-time clock-in/out records with duration tracking
+- **project_completions**: Completed project tracking with total hours
 
 ## API Endpoints
 
@@ -130,15 +143,23 @@ The application uses SQLite with the following tables:
 - `GET /api/user/projects` - Get assigned projects
 - `GET /api/user/timesheets` - Get user timesheets for a specific week
 - `POST /api/user/timesheets` - Submit timesheet entry
+- `POST /api/user/clock-in` - Clock in to a project
+- `POST /api/user/clock-out` - Clock out from a project
+- `GET /api/user/active-entries` - Get active clock-in sessions
+- `GET /api/user/time-entries` - Get completed time entries
 
 ### Admin Endpoints
 - `GET /api/admin/users` - Get all users
 - `POST /api/admin/users` - Create new user
 - `GET /api/admin/projects` - Get all projects
 - `POST /api/admin/projects` - Create new project
+- `PUT /api/admin/projects/:id` - Update project
+- `DELETE /api/admin/projects/:id` - Delete project
 - `POST /api/admin/assign-project` - Assign project to user
 - `GET /api/admin/timesheets` - Get all timesheets with filtering
+- `GET /api/admin/project-completions` - Get completed projects
 - `GET /api/admin/export/csv` - Export timesheets as CSV
+- `POST /api/admin/sync-time-entries` - Sync clock-in/out data to timesheets
 
 ## Sample Data
 
@@ -182,6 +203,11 @@ npm run build  # Creates optimized production build
 1. **Port conflicts**: If ports 3000 or 5000 are in use, modify the PORT environment variable
 2. **Database issues**: Delete `timesheet.db` file to reset the database with sample data
 3. **CORS issues**: Ensure both frontend and backend are running on their respective ports
+4. **Timesheet sync issues**: If clock-in/out data doesn't appear in admin dashboard:
+   - Click "Sync Time Entries" button in admin dashboard
+   - Check browser console for sync progress messages
+   - Verify that time entries have valid project IDs
+   - Ensure users have clocked out (not just clocked in)
 
 ### Logs
 - Backend logs are displayed in the terminal where you run `npm start`
