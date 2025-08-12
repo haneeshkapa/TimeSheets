@@ -188,43 +188,18 @@ export class TimesheetModel {
 
   static syncTimeEntriesToTimesheets(): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Get all completed time entries and aggregate them by user, project, and week
+      // Get all completed time entries
       const query = `
         SELECT 
           te.user_id,
           te.project_id,
-          date(te.date, 'weekday 0', '-6 days') as week_start,
-          CASE strftime('%w', te.date)
-            WHEN '0' THEN SUM(te.duration) / 60.0
-            ELSE 0
-          END as sunday,
-          CASE strftime('%w', te.date)
-            WHEN '1' THEN SUM(te.duration) / 60.0
-            ELSE 0
-          END as monday,
-          CASE strftime('%w', te.date)
-            WHEN '2' THEN SUM(te.duration) / 60.0
-            ELSE 0
-          END as tuesday,
-          CASE strftime('%w', te.date)
-            WHEN '3' THEN SUM(te.duration) / 60.0
-            ELSE 0
-          END as wednesday,
-          CASE strftime('%w', te.date)
-            WHEN '4' THEN SUM(te.duration) / 60.0
-            ELSE 0
-          END as thursday,
-          CASE strftime('%w', te.date)
-            WHEN '5' THEN SUM(te.duration) / 60.0
-            ELSE 0
-          END as friday,
-          CASE strftime('%w', te.date)
-            WHEN '6' THEN SUM(te.duration) / 60.0
-            ELSE 0
-          END as saturday
+          te.date,
+          te.duration,
+          strftime('%w', te.date) as day_of_week
         FROM time_entries te
-        WHERE te.status = 'completed' AND te.duration IS NOT NULL
-        GROUP BY te.user_id, te.project_id, date(te.date, 'weekday 0', '-6 days'), strftime('%w', te.date)
+        JOIN projects p ON te.project_id = p.id
+        WHERE te.status = 'completed' AND te.duration IS NOT NULL AND te.duration > 0
+        ORDER BY te.user_id, te.project_id, te.date
       `;
 
       db.all(query, async (err, rows: any[]) => {
@@ -238,12 +213,19 @@ export class TimesheetModel {
           const aggregated = new Map();
           
           rows.forEach(row => {
-            const key = `${row.user_id}-${row.project_id}-${row.week_start}`;
+            // Calculate week start (Sunday)
+            const entryDate = new Date(row.date);
+            const dayOfWeek = entryDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const weekStart = new Date(entryDate);
+            weekStart.setDate(entryDate.getDate() - dayOfWeek);
+            const weekStartStr = weekStart.toISOString().split('T')[0];
+            
+            const key = `${row.user_id}-${row.project_id}-${weekStartStr}`;
             if (!aggregated.has(key)) {
               aggregated.set(key, {
                 user_id: row.user_id,
                 project_id: row.project_id,
-                week_start: row.week_start,
+                week_start: weekStartStr,
                 sunday: 0,
                 monday: 0,
                 tuesday: 0,
@@ -255,16 +237,24 @@ export class TimesheetModel {
             }
             
             const entry = aggregated.get(key);
-            entry.sunday += row.sunday || 0;
-            entry.monday += row.monday || 0;
-            entry.tuesday += row.tuesday || 0;
-            entry.wednesday += row.wednesday || 0;
-            entry.thursday += row.thursday || 0;
-            entry.friday += row.friday || 0;
-            entry.saturday += row.saturday || 0;
+            const hours = row.duration / 60.0; // Convert minutes to hours
+            
+            // Add hours to the correct day
+            switch (row.day_of_week) {
+              case '0': entry.sunday += hours; break;
+              case '1': entry.monday += hours; break;
+              case '2': entry.tuesday += hours; break;
+              case '3': entry.wednesday += hours; break;
+              case '4': entry.thursday += hours; break;
+              case '5': entry.friday += hours; break;
+              case '6': entry.saturday += hours; break;
+            }
           });
 
+          console.log(`Syncing ${aggregated.size} timesheet entries...`);
+
           // Save each aggregated entry
+          let syncCount = 0;
           for (const entry of aggregated.values()) {
             const hours = {
               sunday: entry.sunday,
@@ -277,8 +267,10 @@ export class TimesheetModel {
             };
             
             await this.saveTimesheet(entry.user_id, entry.project_id, entry.week_start, hours);
+            syncCount++;
           }
 
+          console.log(`Successfully synced ${syncCount} timesheet entries`);
           resolve();
         } catch (error) {
           reject(error);
