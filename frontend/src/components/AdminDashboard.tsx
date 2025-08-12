@@ -11,8 +11,19 @@ const AdminDashboard: React.FC = () => {
     week_start: ''
   });
 
-  const fetchTimesheets = useCallback(async () => {
+  const fetchTimesheets = useCallback(async (autoSync = false) => {
     try {
+      // Auto-sync time entries when dashboard first loads (but not on filter changes)
+      if (autoSync) {
+        try {
+          await apiService.syncTimeEntries();
+          console.log('Auto-sync completed successfully');
+        } catch (syncError) {
+          console.error('Auto-sync failed:', syncError);
+          // Continue anyway - don't block the dashboard
+        }
+      }
+
       const filterOptions = {
         user_id: filters.user_id ? parseInt(filters.user_id) : undefined,
         week_start: filters.week_start || undefined,
@@ -29,7 +40,13 @@ const AdminDashboard: React.FC = () => {
   }, [filters.user_id, filters.week_start, filters.project_id]);
 
   useEffect(() => {
-    fetchTimesheets();
+    fetchTimesheets(true); // Auto-sync on first load
+  }, []); // Only run once on mount
+
+  useEffect(() => {
+    if (filters.user_id || filters.project_id || filters.week_start) {
+      fetchTimesheets(false); // Don't auto-sync on filter changes
+    }
   }, [fetchTimesheets]);
 
   const handleFilterChange = (key: string, value: string) => {
@@ -65,6 +82,20 @@ const AdminDashboard: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const syncTimeEntries = async () => {
+    try {
+      setLoading(true);
+      await apiService.syncTimeEntries();
+      alert('Time entries synced successfully! Refreshing data...');
+      await fetchTimesheets();
+    } catch (error) {
+      console.error('Failed to sync time entries:', error);
+      alert('Failed to sync time entries. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -183,6 +214,13 @@ const AdminDashboard: React.FC = () => {
               </div>
 
               <div className="flex gap-2">
+                <button
+                  onClick={syncTimeEntries}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  disabled={loading}
+                >
+                  {loading ? 'Syncing...' : 'Sync Time Entries'}
+                </button>
                 <button
                   onClick={exportCsv}
                   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"

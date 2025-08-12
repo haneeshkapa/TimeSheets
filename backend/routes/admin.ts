@@ -10,7 +10,8 @@ import {
   assignProject,
   getTimesheets,
   getProjectCompletions,
-  exportCSV
+  exportCSV,
+  syncTimeEntries
 } from '../controllers/admin';
 
 const router = Router();
@@ -27,5 +28,6 @@ router.post('/assign-project', assignProject);
 router.get('/timesheets', getTimesheets);
 router.get('/project-completions', getProjectCompletions);
 router.get('/export/csv', exportCSV);
+router.post('/sync-time-entries', syncTimeEntries);
 
 export default router;

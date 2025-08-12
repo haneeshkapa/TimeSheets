@@ -263,3 +263,14 @@ export const exportCSV = async (req: AuthenticatedRequest, res: Response) => {
     res.status(500).json({ error: 'Export error' });
   }
 };
+
+export const syncTimeEntries = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    await TimesheetModel.syncTimeEntriesToTimesheets();
+    logger.info('Time entries synced to timesheets successfully');
+    res.json({ message: 'Time entries synced successfully' });
+  } catch (error) {
+    logger.error('Error syncing time entries:', error);
+    res.status(500).json({ error: 'Sync error' });
+  }
+};

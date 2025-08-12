@@ -173,6 +173,12 @@ class ApiService {
       throw new Error('Export failed');
     }
   }
+
+  async syncTimeEntries(): Promise<{ message: string }> {
+    return this.makeRequest('/api/admin/sync-time-entries', {
+      method: 'POST',
+    });
+  }
 }
 
 export const apiService = new ApiService();
